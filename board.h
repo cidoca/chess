@@ -22,8 +22,6 @@
 #include <QtGui>
 
 struct STATE {
-    int piece;
-    int x, y, x2, y2;
     int white, black;
     char board[8][8];
 };
@@ -58,6 +56,7 @@ signals:
 public slots:
 
 private:
+    int m_piece, m_x, m_y, m_x2, m_y2;
     int m_mx, m_my;
     int m_points[7];
     int m_mmLevel, m_level;
