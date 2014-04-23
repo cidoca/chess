@@ -47,19 +47,19 @@ void Board::newGame(int level) {
 
     // Ponhe peças
     for (i = 0; i < 8; i++) {
-        m_states[0].board[i][1] = PAWN | BLACK;
-        m_states[0].board[i][6] = PAWN | WHITE;
+        m_states[0].board[1][i] = PAWN | BLACK;
+        m_states[0].board[6][i] = PAWN | WHITE;
     }
-    m_states[0].board[0][0] = m_states[0].board[7][0] = ROOK | BLACK;
-    m_states[0].board[0][7] = m_states[0].board[7][7] = ROOK | WHITE;
-    m_states[0].board[1][0] = m_states[0].board[6][0] = KNIGHT | BLACK;
-    m_states[0].board[1][7] = m_states[0].board[6][7] = KNIGHT | WHITE;
-    m_states[0].board[2][0] = m_states[0].board[5][0] = BISHOP | BLACK;
-    m_states[0].board[2][7] = m_states[0].board[5][7] = BISHOP | WHITE;
-    m_states[0].board[3][0] = QUEEN | BLACK;
-    m_states[0].board[3][7] = QUEEN | WHITE;
-    m_states[0].board[4][0] = KING | BLACK;
-    m_states[0].board[4][7] = KING | WHITE;
+    m_states[0].board[0][0] = m_states[0].board[0][7] = ROOK | BLACK;
+    m_states[0].board[7][0] = m_states[0].board[7][7] = ROOK | WHITE;
+    m_states[0].board[0][1] = m_states[0].board[0][6] = KNIGHT | BLACK;
+    m_states[0].board[7][1] = m_states[0].board[7][6] = KNIGHT | WHITE;
+    m_states[0].board[0][2] = m_states[0].board[0][5] = BISHOP | BLACK;
+    m_states[0].board[7][2] = m_states[0].board[7][5] = BISHOP | WHITE;
+    m_states[0].board[0][3] = QUEEN | BLACK;
+    m_states[0].board[7][3] = QUEEN | WHITE;
+    m_states[0].board[0][4] = KING | BLACK;
+    m_states[0].board[7][4] = KING | WHITE;
 
     // Vamos jogar!
     m_firstClick = true;
@@ -187,7 +187,7 @@ void Board::movePeace()
     }
 
     // Ponhe a peça definitivamente no lugar
-    state->board[m_x2][m_y2] = m_piece;
+    state->board[m_y2][m_x2] = m_piece;
     drawBoard();
 }
 
@@ -197,7 +197,7 @@ void Board::sumPoints(STATE *state) {
     // Soma todas as peças
     state->white = state->black = 0;
     for (y = 0; y < 8; y++) for (x = 0; x < 8; x++) {
-        piece = state->board[x][y];
+        piece = state->board[y][x];
         if (piece & BLACK) state->white += m_points[piece & 0x07];
         else if (piece & WHITE) state->black += m_points[piece & 0x07];
     }
@@ -220,7 +220,7 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
 
     // Varre todo o board por jogadas
     for (j = 0; j < 8; j++) for (i = 0; i < 8; i++) {
-        piece = parent->board[i][j];
+        piece = parent->board[j][i];
         if (piece & player) {
 
             // Seleciona a peça
@@ -233,10 +233,10 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                     if (player == BLACK) {
 
                         // Tenta comer diagonal esquerda
-                        if (i > 0 && j < 7 && parent->board[i - 1][j + 1] & WHITE) {
+                        if (i > 0 && j < 7 && parent->board[j + 1][i - 1] & WHITE) {
                             memcpy(state, parent, sizeof(STATE));
-                            state->board[i - 1][j + 1] = PAWN | BLACK;
-                            state->board[i][j] = 0;
+                            state->board[j + 1][i - 1] = PAWN | BLACK;
+                            state->board[j][i] = 0;
                             mm = myTurn(level + 1, minimax, opponent, player);
 
                             // Calcula máximo ou mínimo
@@ -251,10 +251,10 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                         }
 
                         // Tenta comer diagonal direita
-                        if (i < 7 && j < 7 && parent->board[i + 1][j + 1] & WHITE) {
+                        if (i < 7 && j < 7 && parent->board[j + 1][i + 1] & WHITE) {
                             memcpy(state, parent, sizeof(STATE));
-                            state->board[i + 1][j + 1] = PAWN | BLACK;
-                            state->board[i][j] = 0;
+                            state->board[j + 1][i + 1] = PAWN | BLACK;
+                            state->board[j][i] = 0;
                             mm = myTurn(level + 1, minimax, opponent, player);
 
                             // Calcula máximo ou mínimo
@@ -269,10 +269,10 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                         }
 
                         // Tenta mover duas casas para frente
-                        if (j == 1 && !parent->board[i][j + 1] && !parent->board[i][j + 2]) {
+                        if (j == 1 && !parent->board[j + 1][i] && !parent->board[j + 2][i]) {
                             memcpy(state, parent, sizeof(STATE));
-                            state->board[i][j + 2] = PAWN | BLACK;
-                            state->board[i][j] = 0;
+                            state->board[j + 2][i] = PAWN | BLACK;
+                            state->board[j][i] = 0;
                             mm = myTurn(level + 1, minimax, opponent, player);
 
                             // Calcula máximo ou mínimo
@@ -287,10 +287,10 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                         }
 
                         // Tenta mover uma casa para frente
-                        if (j < 7 && !parent->board[i][j + 1]) {
+                        if (j < 7 && !parent->board[j + 1][i]) {
                             memcpy(state, parent, sizeof(STATE));
-                            state->board[i][j + 1] = PAWN | BLACK;
-                            state->board[i][j] = 0;
+                            state->board[j + 1][i] = PAWN | BLACK;
+                            state->board[j][i] = 0;
                             mm = myTurn(level + 1, minimax, opponent, player);
 
                             // Calcula máximo ou mínimo
@@ -308,10 +308,10 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                     } else {
 
                         // Tenta comer diagonal esquerda
-                        if (i > 0 && j > 0 && parent->board[i - 1][j - 1] & BLACK) {
+                        if (i > 0 && j > 0 && parent->board[j - 1][i - 1] & BLACK) {
                             memcpy(state, parent, sizeof(STATE));
-                            state->board[i - 1][j - 1] = PAWN | WHITE;
-                            state->board[i][j] = 0;
+                            state->board[j - 1][i - 1] = PAWN | WHITE;
+                            state->board[j][i] = 0;
                             mm = myTurn(level + 1, minimax, opponent, player);
 
                             // Calcula mínimo
@@ -320,10 +320,10 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                         }
 
                         // Tenta comer diagonal direita
-                        if (i < 7 && j > 0 && parent->board[i + 1][j - 1] & BLACK) {
+                        if (i < 7 && j > 0 && parent->board[j - 1][i + 1] & BLACK) {
                             memcpy(state, parent, sizeof(STATE));
-                            state->board[i + 1][j - 1] = PAWN | WHITE;
-                            state->board[i][j] = 0;
+                            state->board[j - 1][i + 1] = PAWN | WHITE;
+                            state->board[j][i] = 0;
                             mm = myTurn(level + 1, minimax, opponent, player);
 
                             // Calcula mínimo
@@ -332,10 +332,10 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                         }
 
                         // Tenta mover duas casas para frente
-                        if (j == 6 && !parent->board[i][j - 1] && !parent->board[i][j - 2]) {
+                        if (j == 6 && !parent->board[j - 1][i] && !parent->board[j - 2][i]) {
                             memcpy(state, parent, sizeof(STATE));
-                            state->board[i][j - 2] = PAWN | WHITE;
-                            state->board[i][j] = 0;
+                            state->board[j - 2][i] = PAWN | WHITE;
+                            state->board[j][i] = 0;
                             mm = myTurn(level + 1, minimax, opponent, player);
 
                             // Calcula mínimo
@@ -344,10 +344,10 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                         }
 
                         // Tenta mover uma casa para frente
-                        if (j > 0 && !parent->board[i][j - 1]) {
+                        if (j > 0 && !parent->board[j - 1][i]) {
                             memcpy(state, parent, sizeof(STATE));
-                            state->board[i][j - 1] = PAWN | WHITE;
-                            state->board[i][j] = 0;
+                            state->board[j - 1][i] = PAWN | WHITE;
+                            state->board[j][i] = 0;
                             mm = myTurn(level + 1, minimax, opponent, player);
 
                             // Calcula mínimo
@@ -361,10 +361,10 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                 case KNIGHT:
 
                     // Diagonal inferior esquerda
-                    if (i > 0 && j < 6 && !(parent->board[i - 1][j + 2] & player)) {
+                    if (i > 0 && j < 6 && !(parent->board[j + 2][i - 1] & player)) {
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i - 1][j + 2] = KNIGHT | player;
-                        state->board[i][j] = 0;
+                        state->board[j + 2][i - 1] = KNIGHT | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -380,10 +380,10 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                             }
                         }
                     }
-                    if (i > 1 && j < 7 && !(parent->board[i - 2][j + 1] & player)) {
+                    if (i > 1 && j < 7 && !(parent->board[j + 1][i - 2] & player)) {
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i - 2][j + 1] = KNIGHT | player;
-                        state->board[i][j] = 0;
+                        state->board[j + 1][i - 2] = KNIGHT | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -401,10 +401,10 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                     }
 
                     // Diagonal inferior direita
-                    if (i < 7 && j < 6 && !(parent->board[i + 1][j + 2] & player)) {
+                    if (i < 7 && j < 6 && !(parent->board[j + 2][i + 1] & player)) {
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i + 1][j + 2] = KNIGHT | player;
-                        state->board[i][j] = 0;
+                        state->board[j + 2][i + 1] = KNIGHT | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -420,10 +420,10 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                             }
                         }
                     }
-                    if (i < 6 && j < 7 && !(parent->board[i + 2][j + 1] & player)) {
+                    if (i < 6 && j < 7 && !(parent->board[j + 1][i + 2] & player)) {
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i + 2][j + 1] = KNIGHT | player;
-                        state->board[i][j] = 0;
+                        state->board[j + 1][i + 2] = KNIGHT | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -441,10 +441,10 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                     }
 
                     // Diagonal superior direita
-                    if (i < 6 && j > 0 && !(parent->board[i + 2][j - 1] & player)) {
+                    if (i < 6 && j > 0 && !(parent->board[j - 1][i + 2] & player)) {
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i + 2][j - 1] = KNIGHT | player;
-                        state->board[i][j] = 0;
+                        state->board[j - 1][i + 2] = KNIGHT | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -460,10 +460,10 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                             }
                         }
                     }
-                    if (i < 7 && j > 1 && !(parent->board[i + 1][j - 2] & player)) {
+                    if (i < 7 && j > 1 && !(parent->board[j - 2][i + 1] & player)) {
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i + 1][j - 2] = KNIGHT | player;
-                        state->board[i][j] = 0;
+                        state->board[j - 2][i + 1] = KNIGHT | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -481,10 +481,10 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                     }
 
                     // Diagonal superior esquerda
-                    if (i > 0 && j > 1 && !(parent->board[i - 1][j - 2] & player)) {
+                    if (i > 0 && j > 1 && !(parent->board[j - 2][i - 1] & player)) {
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i - 1][j - 2] = KNIGHT | player;
-                        state->board[i][j] = 0;
+                        state->board[j - 2][i - 1] = KNIGHT | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -500,10 +500,10 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                             }
                         }
                     }
-                    if (i > 1 && j > 0 && !(parent->board[i - 2][j - 1] & player)) {
+                    if (i > 1 && j > 0 && !(parent->board[j - 1][i - 2] & player)) {
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i - 2][j - 1] = KNIGHT | player;
-                        state->board[i][j] = 0;
+                        state->board[j - 1][i - 2] = KNIGHT | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -526,11 +526,11 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
 
                     // Tenta mover para cima
                     for (k = 1; k <= j; k++) {
-                        if (parent->board[i][j - k] & player) break;
+                        if (parent->board[j - k][i] & player) break;
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i][j - k] = ROOK | player;
-                        state->board[i][j] = 0;
+                        state->board[j - k][i] = ROOK | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -546,16 +546,16 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                             }
                         }
 
-                        if (parent->board[i][j - k]) break;
+                        if (parent->board[j - k][i]) break;
                     }
 
                     // Tenta mover para esquerda
                     for (k = 1; k <= i; k++) {
-                        if (parent->board[i - k][j] & player) break;
+                        if (parent->board[j][i - k] & player) break;
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i - k][j] = ROOK | player;
-                        state->board[i][j] = 0;
+                        state->board[j][i - k] = ROOK | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -571,16 +571,16 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                             }
                         }
 
-                        if (parent->board[i - k][j]) break;
+                        if (parent->board[j][i - k]) break;
                     }
 
                     // Tenta mover para baixo
                     for (k = 1; k <= 7 - j; k++) {
-                        if (parent->board[i][j + k] & player) break;
+                        if (parent->board[j + k][i] & player) break;
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i][j + k] = ROOK | player;
-                        state->board[i][j] = 0;
+                        state->board[j + k][i] = ROOK | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -596,16 +596,16 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                             }
                         }
 
-                        if (parent->board[i][j + k]) break;
+                        if (parent->board[j + k][i]) break;
                     }
 
                     // Tenta mover para direita
                     for (k = 1; k <= 7 - i; k++) {
-                        if (parent->board[i + k][j] & player) break;
+                        if (parent->board[j][i + k] & player) break;
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i + k][j] = ROOK | player;
-                        state->board[i][j] = 0;
+                        state->board[j][i + k] = ROOK | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -621,7 +621,7 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                             }
                         }
 
-                        if (parent->board[i + k][j]) break;
+                        if (parent->board[j][i + k]) break;
                     }
 
                     break;
@@ -632,11 +632,11 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                     // Tenta mover para diagonal superior direita
                     min = (j < 7 - i ? j : 7 - i);
                     for (k = 1; k <= min; k++) {
-                        if (parent->board[i + k][j - k] & player) break;
+                        if (parent->board[j - k][i + k] & player) break;
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i + k][j - k] = BISHOP | player;
-                        state->board[i][j] = 0;
+                        state->board[j - k][i + k] = BISHOP | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -652,17 +652,17 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                             }
                         }
 
-                        if (parent->board[i + k][j - k]) break;
+                        if (parent->board[j - k][i + k]) break;
                     }
 
                     // Tenta mover para diagonal inferior direita
                     min = (7 - j < 7 - i ? 7 - j : 7 - i);
                     for (k = 1; k <= min; k++) {
-                        if (parent->board[i + k][j + k] & player) break;
+                        if (parent->board[j + k][i + k] & player) break;
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i + k][j + k] = BISHOP | player;
-                        state->board[i][j] = 0;
+                        state->board[j + k][i + k] = BISHOP | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -678,17 +678,17 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                             }
                         }
 
-                        if (parent->board[i + k][j + k]) break;
+                        if (parent->board[j + k][i + k]) break;
                     }
 
                     // Tenta mover para diagonal inferior esquerda
                     min = (7 - j < i ? 7 - j : i);
                     for (k = 1; k <= min; k++) {
-                        if (parent->board[i - k][j + k] & player) break;
+                        if (parent->board[j + k][i - k] & player) break;
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i - k][j + k] = BISHOP | player;
-                        state->board[i][j] = 0;
+                        state->board[j + k][i - k] = BISHOP | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -704,17 +704,17 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                             }
                         }
 
-                        if (parent->board[i - k][j + k]) break;
+                        if (parent->board[j + k][i - k]) break;
                     }
 
                     // Tenta mover para diagonal superior esquerda
                     min = (j < i ? j : i);
                     for (k = 1; k <= min; k++) {
-                        if (parent->board[i - k][j - k] & player) break;
+                        if (parent->board[j - k][i - k] & player) break;
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i - k][j - k] = BISHOP | player;
-                        state->board[i][j] = 0;
+                        state->board[j - k][i - k] = BISHOP | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -730,7 +730,7 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                             }
                         }
 
-                        if (parent->board[i - k][j - k]) break;
+                        if (parent->board[j - k][i - k]) break;
                     }
 
                     break;
@@ -740,11 +740,11 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
 
                     // Tenta mover para cima
                     for (k = 1; k <= j; k++) {
-                        if (parent->board[i][j - k] & player) break;
+                        if (parent->board[j - k][i] & player) break;
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i][j - k] = QUEEN | player;
-                        state->board[i][j] = 0;
+                        state->board[j - k][i] = QUEEN | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -760,17 +760,17 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                             }
                         }
 
-                        if (parent->board[i][j - k]) break;
+                        if (parent->board[j - k][i]) break;
                     }
 
                     // Tenta mover para diagonal superior direita
                     min = (j < 7 - i ? j : 7 - i);
                     for (k = 1; k <= min; k++) {
-                        if (parent->board[i + k][j - k] & player) break;
+                        if (parent->board[j - k][i + k] & player) break;
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i + k][j - k] = QUEEN | player;
-                        state->board[i][j] = 0;
+                        state->board[j - k][i + k] = QUEEN | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -786,16 +786,16 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                             }
                         }
 
-                        if (parent->board[i + k][j - k]) break;
+                        if (parent->board[j - k][i + k]) break;
                     }
 
                     // Tenta mover para direita
                     for (k = 1; k <= 7 - i; k++) {
-                        if (parent->board[i + k][j] & player) break;
+                        if (parent->board[j][i + k] & player) break;
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i + k][j] = QUEEN | player;
-                        state->board[i][j] = 0;
+                        state->board[j][i + k] = QUEEN | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -811,17 +811,17 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                             }
                         }
 
-                        if (parent->board[i + k][j]) break;
+                        if (parent->board[j][i + k]) break;
                     }
 
                     // Tenta mover para diagonal inferior direita
                     min = (7 - j < 7 - i ? 7 - j : 7 - i);
                     for (k = 1; k <= min; k++) {
-                        if (parent->board[i + k][j + k] & player) break;
+                        if (parent->board[j + k][i + k] & player) break;
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i + k][j + k] = QUEEN | player;
-                        state->board[i][j] = 0;
+                        state->board[j + k][i + k] = QUEEN | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -837,16 +837,16 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                             }
                         }
 
-                        if (parent->board[i + k][j + k]) break;
+                        if (parent->board[j + k][i + k]) break;
                     }
 
                     // Tenta mover para baixo
                     for (k = 1; k <= 7 - j; k++) {
-                        if (parent->board[i][j + k] & player) break;
+                        if (parent->board[j + k][i] & player) break;
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i][j + k] = QUEEN | player;
-                        state->board[i][j] = 0;
+                        state->board[j + k][i] = QUEEN | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -862,17 +862,17 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                             }
                         }
 
-                        if (parent->board[i][j + k]) break;
+                        if (parent->board[j + k][i]) break;
                     }
 
                     // Tenta mover para diagonal inferior esquerda
                     min = (7 - j < i ? 7 - j : i);
                     for (k = 1; k <= min; k++) {
-                        if (parent->board[i - k][j + k] & player) break;
+                        if (parent->board[j + k][i - k] & player) break;
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i - k][j + k] = QUEEN | player;
-                        state->board[i][j] = 0;
+                        state->board[j + k][i - k] = QUEEN | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -888,16 +888,16 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                             }
                         }
 
-                        if (parent->board[i - k][j + k]) break;
+                        if (parent->board[j + k][i - k]) break;
                     }
 
                     // Tenta mover para esquerda
                     for (k = 1; k <= i; k++) {
-                        if (parent->board[i - k][j] & player) break;
+                        if (parent->board[j][i - k] & player) break;
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i - k][j] = QUEEN | player;
-                        state->board[i][j] = 0;
+                        state->board[j][i - k] = QUEEN | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -913,17 +913,17 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                             }
                         }
 
-                        if (parent->board[i - k][j]) break;
+                        if (parent->board[j][i - k]) break;
                     }
 
                     // Tenta mover para diagonal superior esquerda
                     min = (j < i ? j : i);
                     for (k = 1; k <= min; k++) {
-                        if (parent->board[i - k][j - k] & player) break;
+                        if (parent->board[j - k][i - k] & player) break;
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i - k][j - k] = QUEEN | player;
-                        state->board[i][j] = 0;
+                        state->board[j - k][i - k] = QUEEN | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -939,7 +939,7 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                             }
                         }
 
-                        if (parent->board[i - k][j - k]) break;
+                        if (parent->board[j - k][i - k]) break;
                     }
 
                     break;
@@ -948,11 +948,11 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                 case KING:
 
                     // Tenta mover para cima
-                    if (j > 0 && !(parent->board[i][j - 1] & player)) {
+                    if (j > 0 && !(parent->board[j - 1][i] & player)) {
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i][j - 1] = KING | player;
-                        state->board[i][j] = 0;
+                        state->board[j - 1][i] = KING | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -970,11 +970,11 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                     }
 
                     // Tenta mover para diagonal superior direita
-                    if (j > 0 && i < 7 && !(parent->board[i + 1][j - 1] & player)) {
+                    if (j > 0 && i < 7 && !(parent->board[j - 1][i + 1] & player)) {
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i + 1][j - 1] = KING | player;
-                        state->board[i][j] = 0;
+                        state->board[j - 1][i + 1] = KING | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -992,11 +992,11 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                     }
 
                     // Tenta mover para direita
-                    if (i < 7 && !(parent->board[i + 1][j] & player)) {
+                    if (i < 7 && !(parent->board[j][i + 1] & player)) {
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i + 1][j] = KING | player;
-                        state->board[i][j] = 0;
+                        state->board[j][i + 1] = KING | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -1014,11 +1014,11 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                     }
 
                     // Tenta mover para diagonal inferior direita
-                    if (j < 7 && i < 7 && !(parent->board[i + 1][j + 1] & player)) {
+                    if (j < 7 && i < 7 && !(parent->board[j + 1][i + 1] & player)) {
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i + 1][j + 1] = KING | player;
-                        state->board[i][j] = 0;
+                        state->board[j + 1][i + 1] = KING | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -1036,11 +1036,11 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                     }
 
                     // Tenta mover para baixo
-                    if (j < 7 && !(parent->board[i][j + 1] & player)) {
+                    if (j < 7 && !(parent->board[j + 1][i] & player)) {
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i][j + 1] = KING | player;
-                        state->board[i][j] = 0;
+                        state->board[j + 1][i] = KING | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -1058,11 +1058,11 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                     }
 
                     // Tenta mover para diagonal inferior esquerda
-                    if (j < 7 && i > 0 && !(parent->board[i - 1][j + 1] & player)) {
+                    if (j < 7 && i > 0 && !(parent->board[j + 1][i - 1] & player)) {
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i - 1][j + 1] = KING | player;
-                        state->board[i][j] = 0;
+                        state->board[j + 1][i - 1] = KING | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -1080,11 +1080,11 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                     }
 
                     // Tenta mover para esquerda
-                    if (i > 0 && !(parent->board[i - 1][j] & player)) {
+                    if (i > 0 && !(parent->board[j][i - 1] & player)) {
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i - 1][j] = KING | player;
-                        state->board[i][j] = 0;
+                        state->board[j][i - 1] = KING | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -1102,11 +1102,11 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
                     }
 
                     // Tenta mover para diagonal superior esquerda
-                    if (j > 0 && i > 0 && !(parent->board[i - 1][j - 1] & player)) {
+                    if (j > 0 && i > 0 && !(parent->board[j - 1][i - 1] & player)) {
 
                         memcpy(state, parent, sizeof(STATE));
-                        state->board[i - 1][j - 1] = KING | player;
-                        state->board[i][j] = 0;
+                        state->board[j - 1][i - 1] = KING | player;
+                        state->board[j][i] = 0;
                         mm = myTurn(level + 1, minimax, opponent, player);
 
                         // Calcula máximo ou mínimo
@@ -1132,8 +1132,8 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
     if (!level) {
         m_x = x; m_y = y;
         m_x2 = x2; m_y2 = y2;
-        m_piece = parent->board[x][y];
-        parent->board[x][y] = 0;
+        m_piece = parent->board[y][x];
+        parent->board[y][x] = 0;
         movePeace();
     }
 
@@ -1141,50 +1141,49 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
     return minimax;
 }
 
-int Board::yourTurn(POINT *p) {
+int Board::yourTurn(int x, int y) {
     int i, j;
     STATE *state = &m_states[0];
 
     // Verifica se é uma peça preta
-    if (state->board[p->x][p->y] & WHITE) return 0;
+    if (state->board[y][x] & WHITE) return 0;
 
     // Valida o movimento da peça escolhida
-    switch (state->board[m_x][m_y] & 0x07) {
+    switch (state->board[m_y][m_x] & 0x07) {
 
         case PAWN:
 
             // Movimento para frente
-            if (m_x == p->x && (m_y - p->y == 1 || (m_y - p->y == 2 &&
-              m_y == 6 && !state->board[p->x][5]))) break;
+            if (m_x == x && (m_y - y == 1 || (m_y - y == 2 &&
+              m_y == 6 && !state->board[5][x]))) break;
 
             // Movimento para diagonal comendo
-            if (abs(m_x - p->x) == 1 && m_y - p->y == 1 && state->board
-              [p->x][p->y] & BLACK) break;
+            if (abs(m_x - x) == 1 && m_y - y == 1 && state->board[y][x] & BLACK) break;
             return 0;
 
         case ROOK:
 
             // Verifica se moveu na horizontal ou vertical
-            if (m_x != p->x && m_y != p->y) return 0;
+            if (m_x != x && m_y != y) return 0;
 
             // Verifica se há alguma peça no caminho (vertical)
-            if (m_x == p->x) {
-                if (m_y > p->y) {
-                    for (i = m_y - 1; i > p->y; i--)
-                        if (state->board[p->x][i]) return 0;
+            if (m_x == x) {
+                if (m_y > y) {
+                    for (i = m_y - 1; i > y; i--)
+                        if (state->board[i][x]) return 0;
                 } else {
-                    for (i = m_y + 1; i < p->y; i++)
-                        if (state->board[p->x][i]) return 0;
+                    for (i = m_y + 1; i < y; i++)
+                        if (state->board[i][x]) return 0;
                 }
 
             // Verifica se há alguma peça no caminho (horizontal)
             } else {
-                if (m_x > p->x) {
-                    for (i = m_x - 1; i > p->x; i--)
-                        if (state->board[i][p->y]) return 0;
+                if (m_x > x) {
+                    for (i = m_x - 1; i > x; i--)
+                        if (state->board[y][i]) return 0;
                 } else {
-                    for (i = m_x + 1; i < p->x; i++)
-                        if (state->board[i][p->y]) return 0;
+                    for (i = m_x + 1; i < x; i++)
+                        if (state->board[y][i]) return 0;
                 }
             }
             break;
@@ -1192,29 +1191,29 @@ int Board::yourTurn(POINT *p) {
         case KNIGHT:
 
             // Verifica se é um "L" válido
-            if ((abs(m_x - p->x) == 2 && abs(m_y - p->y) == 1) ||
-              (abs(m_x - p->x) == 1 && abs(m_y - p->y) == 2)) break;
+            if ((abs(m_x - x) == 2 && abs(m_y - y) == 1) ||
+              (abs(m_x - x) == 1 && abs(m_y - y) == 2)) break;
             return 0;
 
         case BISHOP:
 
             // Verifica se moveu na diagonal
-            j = abs(m_x - p->x);
-            if (j != abs(m_y - p->y)) return 0;
+            j = abs(m_x - x);
+            if (j != abs(m_y - y)) return 0;
 
             // Verifica se há alguma peça no caminho diagonal
             for (i = 1; i < j; i++) {
-                if (m_x < p->x) {
-                    if (m_y > p->y) {
-                        if (state->board[m_x + i][m_y - i]) return 0;
+                if (m_x < x) {
+                    if (m_y > y) {
+                        if (state->board[m_y - i][m_x + i]) return 0;
                     } else {
-                        if (state->board[m_x + i][m_y + i]) return 0;
+                        if (state->board[m_y + i][m_x + i]) return 0;
                     }
                 } else {
-                    if (m_y > p->y) {
-                        if (state->board[m_x - i][m_y - i]) return 0;
+                    if (m_y > y) {
+                        if (state->board[m_y - i][m_x - i]) return 0;
                     } else {
-                        if (state->board[m_x - i][m_y + i]) return 0;
+                        if (state->board[m_y + i][m_x - i]) return 0;
                     }
                 }
             }
@@ -1223,61 +1222,61 @@ int Board::yourTurn(POINT *p) {
         case QUEEN:
 
             // Verifica se moveu na horizontal, vertical ou diagonal
-            j = abs(m_x - p->x);
-            if (m_x != p->x && m_y != p->y && j != abs(m_y - p->y)) return 0;
+            j = abs(m_x - x);
+            if (m_x != x && m_y != y && j != abs(m_y - y)) return 0;
 
             // Verifica se há alguma peça no caminho (vertical)
-            if (m_x == p->x) {
-                if (m_y > p->y) {
-                    for (i = m_y - 1; i > p->y; i--)
-                        if (state->board[p->x][i]) return 0;
+            if (m_x == x) {
+                if (m_y > y) {
+                    for (i = m_y - 1; i > y; i--)
+                        if (state->board[i][x]) return 0;
                 } else {
-                    for (i = m_y + 1; i < p->y; i++)
-                        if (state->board[p->x][i]) return 0;
+                    for (i = m_y + 1; i < y; i++)
+                        if (state->board[i][x]) return 0;
                 }
 
             // Verifica se há alguma peça no caminho (horizontal)
-            } else if (m_y == p->y) {
-                if (m_x > p->x) {
-                    for (i = m_x - 1; i > p->x; i--)
-                        if (state->board[i][p->y]) return 0;
+            } else if (m_y == y) {
+                if (m_x > x) {
+                    for (i = m_x - 1; i > x; i--)
+                        if (state->board[y][i]) return 0;
                 } else {
-                    for (i = m_x + 1; i < p->x; i++)
-                        if (state->board[i][p->y]) return 0;
+                    for (i = m_x + 1; i < x; i++)
+                        if (state->board[y][i]) return 0;
                 }
 
             // Verifica se há alguma peça no caminho diagonal
             } else for (i = 1; i < j; i++) {
-                if (m_x < p->x) {
-                    if (m_y > p->y) {
-                        if (state->board[m_x + i][m_y - i]) return 0;
+                if (m_x < x) {
+                    if (m_y > y) {
+                        if (state->board[m_y - i][m_x + i]) return 0;
                     } else {
-                        if (state->board[m_x + i][m_y + i]) return 0;
+                        if (state->board[m_y + i][m_x + i]) return 0;
                     }
                 } else {
-                    if (m_y > p->y) {
-                        if (state->board[m_x - i][m_y - i]) return 0;
+                    if (m_y > y) {
+                        if (state->board[m_y - i][m_x - i]) return 0;
                     } else {
-                        if (state->board[m_x - i][m_y + i]) return 0;
+                        if (state->board[m_y + i][m_x - i]) return 0;
                     }
                 }
             }
             break;
 
         case KING:
-            if (abs(m_x - p->x) > 1 || abs(m_y - p->y) > 1) return 0;
+            if (abs(m_x - x) > 1 || abs(m_y - y) > 1) return 0;
             break;
     }
 
     // Atualiza board e executa animação
-    m_x2 = p->x;
-    m_y2 = p->y;
+    m_x2 = x;
+    m_y2 = y;
 
     // Verifica se ponhe o rei em cheque
     m_mmLevel = 2;
     memcpy(&m_states[1], state, sizeof(STATE));
-    m_states[1].board[m_x2][m_y2] = state->board[m_x][m_y] & ~SELECT;
-    m_states[1].board[m_x][m_y] = 0;
+    m_states[1].board[m_y2][m_x2] = state->board[m_y][m_x] & ~SELECT;
+    m_states[1].board[m_y][m_x] = 0;
     if (myTurn(1, MINIMAX, BLACK, WHITE) >= 60) {
         m_mmLevel = m_level;
         return 2;
@@ -1285,29 +1284,25 @@ int Board::yourTurn(POINT *p) {
 
     // Movimento válido
     m_mmLevel = m_level;
-    m_piece = state->board[m_x][m_y] & ~SELECT;
-    state->board[m_x][m_y] = 0;
+    m_piece = state->board[m_y][m_x] & ~SELECT;
+    state->board[m_y][m_x] = 0;
     movePeace();
     return 1;
 }
 
 void Board::selectPiece(int x, int y) {
-    POINT p;
-
-    p.x = x;
-    p.y = y;
+    m_x = x;
+    m_y = y;
 
     // Verifica se há uma peça do player neste local
-    if (!(m_states[0].board[p.x][p.y] & WHITE)) {
+    if (!(m_states[0].board[m_y][m_x] & WHITE)) {
         QMessageBox::warning(this, "Chess", "Você deve selecionar uma peça sua !!!");
         return;
     }
 
     // Peça selecionada
     m_firstClick = false;
-    m_x = p.x;
-    m_y = p.y;
-    m_states[0].board[p.x][p.y] |= SELECT;
+    m_states[0].board[m_y][m_x] |= SELECT;
     drawBoard();
 }
 
@@ -1338,23 +1333,19 @@ bool Board::gameFinished(int player, int opponent) {
 }
 
 void Board::play(int x, int y) {
-    POINT p;
     int result;
 //    HCURSOR hCursor;
 
-    p.x = x;
-    p.y = y;
-
     // Cancela jogada
-    if (m_x == p.x && m_y == p.y) {
+    if (m_x == x && m_y == y) {
         m_firstClick = true;
-        m_states[0].board[p.x][p.y] &= ~SELECT;
+        m_states[0].board[y][x] &= ~SELECT;
         drawBoard();
         return;
     }
 
     // Sua vez
-    result = yourTurn(&p);
+    result = yourTurn(x, y);
     if (!result)
         QMessageBox::warning(this, "Chess", "Jogada inválida! Tente outra vez.");
     else if (result == 2)
@@ -1382,7 +1373,7 @@ void Board::paintEvent(QPaintEvent *)
 
     for (y = 0; y < 8; y++) {
         for (x = 0; x < 8; x++) {
-            int piece = m_states[0].board[x][y];
+            int piece = m_states[0].board[y][x];
 
             if (piece & SELECT)
                 painter.drawRect(x * SIZE, y * SIZE, SIZE, SIZE);

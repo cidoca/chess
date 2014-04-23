@@ -26,10 +26,6 @@ struct STATE {
     char board[8][8];
 };
 
-struct POINT {
-    int x, y;
-};
-
 class Board : public QWidget
 {
     Q_OBJECT
@@ -43,7 +39,7 @@ protected:
     void movePeace();
     void sumPoints(STATE *estado);
     int myTurn(int level, int MM, int player, int opponent);
-    int yourTurn(POINT *p);
+    int yourTurn(int x, int y);
     void selectPiece(int x, int y);
     bool gameFinished(int player, int opponent);
     void play(int x, int y);
