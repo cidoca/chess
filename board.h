@@ -29,20 +29,21 @@ struct STATE {
 class Board : public QWidget
 {
     Q_OBJECT
+    Q_PROPERTY(QPoint position READ position WRITE setPosition)
 
 public:
     Board(QWidget *parent = 0);
     void newGame(int level);
 
 protected:
-    void drawBoard(int mx = -1, int my = -1);
-    void movePeace();
+    void animateMove(const char *method);
     void sumPoints(STATE *estado);
     int myTurn(int level, int MM, int player, int opponent);
-    int yourTurn(int x, int y);
-    void selectPiece(int x, int y);
+    bool validateMove();
     bool gameFinished(int player, int opponent);
-    void play(int x, int y);
+    void play();
+    QPoint position() const;
+    void setPosition(const QPoint &pos);
 
     void paintEvent(QPaintEvent *event);
     void mousePressEvent(QMouseEvent *event);
@@ -50,14 +51,16 @@ protected:
 signals:
 
 public slots:
+    void playerMoveFinished();
+    void computerMoveFinished();
 
 private:
     int m_piece, m_x, m_y, m_x2, m_y2;
-    int m_mx, m_my;
     int m_points[7];
     int m_mmLevel, m_level;
     bool m_gameStopped, m_firstClick;
     STATE m_states[10];
+    QPoint m_position;
     QPixmap m_board, m_black, m_white;
 };
 

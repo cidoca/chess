@@ -40,7 +40,7 @@ Board::Board(QWidget *parent) :
 
 void Board::newGame(int level) {
     int i;
-    char tit[32];
+//    char tit[32];
 
     // Limpa board
     memset(m_states, 0, sizeof(m_states));
@@ -63,132 +63,67 @@ void Board::newGame(int level) {
 
     // Vamos jogar!
     m_firstClick = true;
-    if (level) {
-        drawBoard();
-        m_gameStopped = false;
-        m_mmLevel = m_level = level;
+    m_gameStopped = false;
+    m_level = level;
+    update();
 /*        strcpy(tit, szAppName);
         if (level == FACIL) strcat(tit, " (Fácil)");
         else if (level == NORMAL) strcat(tit, " (Normal)");
         else strcat(tit, " (Difícil)");
         SetWindowText(hDlg, tit); */
-    }
 }
 
-void Board::drawBoard(int mx, int my)
+void Board::animateMove(const char *method)
 {
-    m_mx = mx;
-    m_my = my;
-    update();
-}
+    QPropertyAnimation *anim;
+    QSequentialAnimationGroup *move = new QSequentialAnimationGroup;
 
-void Board::movePeace()
-{
-    int i, dif;
-    STATE *state = &m_states[0];
+    m_gameStopped = true;
+    m_piece = m_states[0].board[m_y][m_x] & ~SELECT;
+    m_states[0].board[m_y][m_x] = 0;
+    connect(move, SIGNAL(finished()), this, method);
 
     // Movimentos do cavalo
     if ((m_piece & 0x07) == KNIGHT) {
+        if (qAbs(m_x2 - m_x) > qAbs(m_y2 - m_y)) {
+            anim = new QPropertyAnimation(this, "position");
+            anim->setEasingCurve(QEasingCurve::OutCubic);
+            anim->setDuration(3 * 200);
+            anim->setStartValue(QPoint(m_x * SIZE, m_y * SIZE));
+            anim->setEndValue(QPoint(m_x2 * SIZE, m_y * SIZE));
+            move->addAnimation(anim);
 
-        // Move na diagonal superior direita 1
-        if (m_x2 - m_x == 1 && m_y - m_y2 == 2) {
-            for (i = m_y * 32; i >= m_y2 * 32; i -= 2)
-                drawBoard(m_x * 32, i);
-            for (i = m_x * 32; i < m_x2 * 32; i += 2)
-                drawBoard(i, m_y2 * 32);
+            anim = new QPropertyAnimation(this, "position");
+            anim->setEasingCurve(QEasingCurve::OutCubic);
+            anim->setDuration(2 * 200);
+            anim->setStartValue(QPoint(m_x2 * SIZE, m_y * SIZE));
+            anim->setEndValue(QPoint(m_x2 * SIZE, m_y2 * SIZE));
+        } else {
+            anim = new QPropertyAnimation(this, "position");
+            anim->setEasingCurve(QEasingCurve::OutCubic);
+            anim->setDuration(3 * 200);
+            anim->setStartValue(QPoint(m_x * SIZE, m_y * SIZE));
+            anim->setEndValue(QPoint(m_x * SIZE, m_y2 * SIZE));
+            move->addAnimation(anim);
 
-        // Move na diagonal superior direita 2
-        } else if (m_x2 - m_x == 2 && m_y - m_y2 == 1) {
-            for (i = m_x * 32; i <= m_x2 * 32; i += 2)
-                drawBoard(i, m_y * 32);
-            for (i = m_y * 32; i > m_y2 * 32; i -= 2)
-                drawBoard(m_x2 * 32, i);
-
-        // Move na diagonal inferior direita 1
-        } else if (m_x2 - m_x == 2 && m_y2 - m_y == 1) {
-            for (i = m_x * 32; i <= m_x2 * 32; i += 2)
-                drawBoard(i, m_y * 32);
-            for (i = m_y * 32; i < m_y2 * 32; i += 2)
-                drawBoard(m_x2 * 32, i);
-
-        // Move na diagonal inferior direita 2
-        } else if (m_x2 - m_x == 1 && m_y2 - m_y == 2) {
-            for (i = m_y * 32; i <= m_y2 * 32; i += 2)
-                drawBoard(m_x * 32, i);
-            for (i = m_x * 32; i < m_x2 * 32; i += 2)
-                drawBoard(i, m_y2 * 32);
-
-        // Move na diagonal inferior esquerda 1
-        } else if (m_x - m_x2 == 1 && m_y2 - m_y == 2) {
-            for (i = m_y * 32; i <= m_y2 * 32; i += 2)
-                drawBoard(m_x * 32, i);
-            for (i = m_x * 32; i > m_x2 * 32; i -= 2)
-                drawBoard(i, m_y2 * 32);
-
-        // Move na diagonal inferior esquerda 2
-        } else if (m_x - m_x2 == 2 && m_y2 - m_y == 1) {
-            for (i = m_x * 32; i >= m_x2 * 32; i -= 2)
-                drawBoard(i, m_y * 32);
-            for (i = m_y * 32; i < m_y2 * 32; i += 2)
-                drawBoard(m_x2 * 32, i);
-
-        // Move na diagonal superior esquerda 1
-        } else if (m_x - m_x2 == 2 && m_y - m_y2 == 1) {
-            for (i = m_x * 32; i >= m_x2 * 32; i -= 2)
-                drawBoard(i, m_y * 32);
-            for (i = m_y * 32; i > m_y2 * 32; i -= 2)
-                drawBoard(m_x2 * 32, i);
-
-        // Move na diagonal superior esquerda 2
-        } else /*if (m_x - m_x2 == 1 && m_y - m_y2 == 2)*/ {
-            for (i = m_y * 32; i >= m_y2 * 32; i -= 2)
-                drawBoard(m_x * 32, i);
-            for (i = m_x * 32; i > m_x2 * 32; i -= 2)
-                drawBoard(i, m_y2 * 32);
+            anim = new QPropertyAnimation(this, "position");
+            anim->setEasingCurve(QEasingCurve::OutCubic);
+            anim->setDuration(2 * 200);
+            anim->setStartValue(QPoint(m_x * SIZE, m_y2 * SIZE));
+            anim->setEndValue(QPoint(m_x2 * SIZE, m_y2 * SIZE));
         }
 
     // Demais peças
     } else {
-
-        // Move na vertical
-        if (m_x == m_x2) {
-            if (m_y > m_y2) for (i = m_y * 32; i > m_y2 * 32; i -= 2)
-                drawBoard(m_x * 32, i);
-            else for (i = m_y * 32; i < m_y2 * 32; i += 2)
-                drawBoard(m_x * 32, i);
-
-        // Move na horizontal	
-        } else if (m_y == m_y2) {
-            if (m_x > m_x2) for (i = m_x * 32; i > m_x2 * 32; i -= 2)
-                drawBoard(i, m_y * 32);
-            else for (i = m_x * 32; i < m_x2 * 32; i += 2)
-                drawBoard(i, m_y * 32);
-
-        // Move na diagonal superior direita
-        } else if (m_y > m_y2 && m_x < m_x2) {
-            dif = (m_x2 - m_x) * 32;
-            for (i = 0; i < dif; i += 2) drawBoard(32 * m_x + i, 32 * m_y - i);
-
-        // Move na diagonal inferior direita
-        } else if (m_y < m_y2 && m_x < m_x2) {
-            dif = (m_x2 - m_x) * 32;
-            for (i = 0; i < dif; i += 2) drawBoard(32 * m_x + i, 32 * m_y + i);
-
-        // Move na diagonal inferior esquerda
-        } else if (m_y < m_y2 && m_x > m_x2) {
-            dif = (m_x - m_x2) * 32;
-            for (i = 0; i < dif; i += 2) drawBoard(32 * m_x - i, 32 * m_y + i);
-
-        // Move na diagonal superior esquerda
-        } else /*if (m_y > m_y2 && m_x > m_x2)*/ {
-            dif = (m_x - m_x2) * 32;
-            for (i = 0; i < dif; i += 2) drawBoard(32 * m_x - i, 32 * m_y - i);
-        }
+        anim = new QPropertyAnimation(this, "position");
+        anim->setEasingCurve(QEasingCurve::OutCubic);
+        anim->setDuration(qMax(qAbs(m_x2 - m_x), qAbs(m_y2 - m_y)) * 200);
+        anim->setStartValue(QPoint(m_x * SIZE, m_y * SIZE));
+        anim->setEndValue(QPoint(m_x2 * SIZE, m_y2 * SIZE));
     }
 
-    // Ponhe a peça definitivamente no lugar
-    state->board[m_y2][m_x2] = m_piece;
-    drawBoard();
+    move->addAnimation(anim);
+    move->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
 void Board::sumPoints(STATE *state) {
@@ -198,8 +133,8 @@ void Board::sumPoints(STATE *state) {
     state->white = state->black = 0;
     for (y = 0; y < 8; y++) for (x = 0; x < 8; x++) {
         piece = state->board[y][x];
-        if (piece & BLACK) state->white += m_points[piece & 0x07];
-        else if (piece & WHITE) state->black += m_points[piece & 0x07];
+        if (piece & BLACK) state->black += m_points[piece & 0x07];
+        else if (piece & WHITE) state->white += m_points[piece & 0x07];
     }
 }
 
@@ -212,7 +147,7 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
     // Calcule pontuação deste caminho
     if (level == m_mmLevel) {
         sumPoints(parent);
-        return parent->white - parent->black;
+        return parent->black - parent->white;
     }
 
     // Valor inicial para minimax
@@ -1132,21 +1067,16 @@ int Board::myTurn(int level, int MM, int player, int opponent) {
     if (!level) {
         m_x = x; m_y = y;
         m_x2 = x2; m_y2 = y2;
-        m_piece = parent->board[y][x];
-        parent->board[y][x] = 0;
-        movePeace();
+        animateMove(SLOT(computerMoveFinished()));
     }
 
     // Retorna MINIMAX deste nível
     return minimax;
 }
 
-int Board::yourTurn(int x, int y) {
+bool Board::validateMove() {
     int i, j;
     STATE *state = &m_states[0];
-
-    // Verifica se é uma peça preta
-    if (state->board[y][x] & WHITE) return 0;
 
     // Valida o movimento da peça escolhida
     switch (state->board[m_y][m_x] & 0x07) {
@@ -1154,156 +1084,144 @@ int Board::yourTurn(int x, int y) {
         case PAWN:
 
             // Movimento para frente
-            if (m_x == x && (m_y - y == 1 || (m_y - y == 2 &&
-              m_y == 6 && !state->board[5][x]))) break;
+            if (m_x == m_x2 && (m_y - m_y2 == 1 || (m_y - m_y2 == 2 &&
+                             m_y == 6 && !state->board[5][m_x])))
+                return true;
 
             // Movimento para diagonal comendo
-            if (abs(m_x - x) == 1 && m_y - y == 1 && state->board[y][x] & BLACK) break;
-            return 0;
+            if (qAbs(m_x - m_x2) == 1 && m_y - m_y2 == 1 && state->board[m_y2][m_x2] & BLACK)
+                return true;
+
+            return false;
 
         case ROOK:
 
             // Verifica se moveu na horizontal ou vertical
-            if (m_x != x && m_y != y) return 0;
+            if (m_x != m_x2 && m_y != m_y2)
+                return false;
 
             // Verifica se há alguma peça no caminho (vertical)
-            if (m_x == x) {
-                if (m_y > y) {
-                    for (i = m_y - 1; i > y; i--)
-                        if (state->board[i][x]) return 0;
+            if (m_x == m_x2) {
+                if (m_y > m_y2) {
+                    for (i = m_y - 1; i > m_y2; i--)
+                        if (state->board[i][m_x])
+                            return false;
                 } else {
-                    for (i = m_y + 1; i < y; i++)
-                        if (state->board[i][x]) return 0;
+                    for (i = m_y + 1; i < m_y2; i++)
+                        if (state->board[i][m_x])
+                            return false;
                 }
 
             // Verifica se há alguma peça no caminho (horizontal)
             } else {
-                if (m_x > x) {
-                    for (i = m_x - 1; i > x; i--)
-                        if (state->board[y][i]) return 0;
+                if (m_x > m_x2) {
+                    for (i = m_x - 1; i > m_x2; i--)
+                        if (state->board[m_y][i])
+                            return false;
                 } else {
-                    for (i = m_x + 1; i < x; i++)
-                        if (state->board[y][i]) return 0;
+                    for (i = m_x + 1; i < m_x2; i++)
+                        if (state->board[m_y][i])
+                            return false;
                 }
             }
-            break;
+
+            return true;
 
         case KNIGHT:
 
             // Verifica se é um "L" válido
-            if ((abs(m_x - x) == 2 && abs(m_y - y) == 1) ||
-              (abs(m_x - x) == 1 && abs(m_y - y) == 2)) break;
-            return 0;
+            return ((qAbs(m_x - m_x2) == 2 && qAbs(m_y - m_y2) == 1) ||
+                    (qAbs(m_x - m_x2) == 1 && qAbs(m_y - m_y2) == 2));
 
         case BISHOP:
 
             // Verifica se moveu na diagonal
-            j = abs(m_x - x);
-            if (j != abs(m_y - y)) return 0;
+            j = qAbs(m_x - m_x2);
+            if (j != qAbs(m_y - m_y2))
+                return false;
 
             // Verifica se há alguma peça no caminho diagonal
             for (i = 1; i < j; i++) {
-                if (m_x < x) {
-                    if (m_y > y) {
-                        if (state->board[m_y - i][m_x + i]) return 0;
+                if (m_x < m_x2) {
+                    if (m_y > m_y2) {
+                        if (state->board[m_y - i][m_x + i])
+                            return false;
                     } else {
-                        if (state->board[m_y + i][m_x + i]) return 0;
+                        if (state->board[m_y + i][m_x + i])
+                            return false;
                     }
                 } else {
-                    if (m_y > y) {
-                        if (state->board[m_y - i][m_x - i]) return 0;
+                    if (m_y > m_y2) {
+                        if (state->board[m_y - i][m_x - i])
+                            return false;
                     } else {
-                        if (state->board[m_y + i][m_x - i]) return 0;
+                        if (state->board[m_y + i][m_x - i])
+                            return false;
                     }
                 }
             }
-            break;
+
+            return true;
 
         case QUEEN:
 
             // Verifica se moveu na horizontal, vertical ou diagonal
-            j = abs(m_x - x);
-            if (m_x != x && m_y != y && j != abs(m_y - y)) return 0;
+            j = qAbs(m_x - m_x2);
+            if (m_x != m_x2 && m_y != m_y2 && j != qAbs(m_y - m_y2))
+                return false;
 
             // Verifica se há alguma peça no caminho (vertical)
-            if (m_x == x) {
-                if (m_y > y) {
-                    for (i = m_y - 1; i > y; i--)
-                        if (state->board[i][x]) return 0;
+            if (m_x == m_x2) {
+                if (m_y > m_y2) {
+                    for (i = m_y - 1; i > m_y2; i--)
+                        if (state->board[i][m_x])
+                            return false;
                 } else {
-                    for (i = m_y + 1; i < y; i++)
-                        if (state->board[i][x]) return 0;
+                    for (i = m_y + 1; i < m_y2; i++)
+                        if (state->board[i][m_x])
+                            return false;
                 }
 
             // Verifica se há alguma peça no caminho (horizontal)
-            } else if (m_y == y) {
-                if (m_x > x) {
-                    for (i = m_x - 1; i > x; i--)
-                        if (state->board[y][i]) return 0;
+            } else if (m_y == m_y2) {
+                if (m_x > m_x2) {
+                    for (i = m_x - 1; i > m_x2; i--)
+                        if (state->board[m_y][i])
+                            return false;
                 } else {
-                    for (i = m_x + 1; i < x; i++)
-                        if (state->board[y][i]) return 0;
+                    for (i = m_x + 1; i < m_x2; i++)
+                        if (state->board[m_y][i])
+                            return false;
                 }
 
             // Verifica se há alguma peça no caminho diagonal
             } else for (i = 1; i < j; i++) {
-                if (m_x < x) {
-                    if (m_y > y) {
-                        if (state->board[m_y - i][m_x + i]) return 0;
+                if (m_x < m_x2) {
+                    if (m_y > m_y2) {
+                        if (state->board[m_y - i][m_x + i])
+                            return false;
                     } else {
-                        if (state->board[m_y + i][m_x + i]) return 0;
+                        if (state->board[m_y + i][m_x + i])
+                            return false;
                     }
                 } else {
-                    if (m_y > y) {
-                        if (state->board[m_y - i][m_x - i]) return 0;
+                    if (m_y > m_y2) {
+                        if (state->board[m_y - i][m_x - i])
+                            return false;
                     } else {
-                        if (state->board[m_y + i][m_x - i]) return 0;
+                        if (state->board[m_y + i][m_x - i])
+                            return false;
                     }
                 }
             }
-            break;
+
+            return true;
 
         case KING:
-            if (abs(m_x - x) > 1 || abs(m_y - y) > 1) return 0;
-            break;
+            return !(qAbs(m_x - m_x2) > 1 || qAbs(m_y - m_y2) > 1);
     }
 
-    // Atualiza board e executa animação
-    m_x2 = x;
-    m_y2 = y;
-
-    // Verifica se ponhe o rei em cheque
-    m_mmLevel = 2;
-    memcpy(&m_states[1], state, sizeof(STATE));
-    m_states[1].board[m_y2][m_x2] = state->board[m_y][m_x] & ~SELECT;
-    m_states[1].board[m_y][m_x] = 0;
-    if (myTurn(1, MINIMAX, BLACK, WHITE) >= 60) {
-        m_mmLevel = m_level;
-        return 2;
-    }
-
-    // Movimento válido
-    m_mmLevel = m_level;
-    m_piece = state->board[m_y][m_x] & ~SELECT;
-    state->board[m_y][m_x] = 0;
-    movePeace();
-    return 1;
-}
-
-void Board::selectPiece(int x, int y) {
-    m_x = x;
-    m_y = y;
-
-    // Verifica se há uma peça do player neste local
-    if (!(m_states[0].board[m_y][m_x] & WHITE)) {
-        QMessageBox::warning(this, "Chess", "Você deve selecionar uma peça sua !!!");
-        return;
-    }
-
-    // Peça selecionada
-    m_firstClick = false;
-    m_states[0].board[m_y][m_x] |= SELECT;
-    drawBoard();
+    return false;
 }
 
 bool Board::gameFinished(int player, int opponent) {
@@ -1317,7 +1235,7 @@ bool Board::gameFinished(int player, int opponent) {
         // Verifica se é cheque mate
         m_mmLevel = 3;
         memcpy(&m_states[1], &m_states[0], sizeof(STATE));
-        if (abs(myTurn(1, opponent == WHITE ? -MINIMAX : MINIMAX, opponent, player)) >= 60) {
+        if (qAbs(myTurn(1, opponent == WHITE ? -MINIMAX : MINIMAX, opponent, player)) >= 60) {
             m_gameStopped = true;
             QMessageBox::warning(this, "Chess", "Cheque Mate!!!");
             return true;
@@ -1328,39 +1246,58 @@ bool Board::gameFinished(int player, int opponent) {
     }
 
     // Ninguém venceu
-    m_mmLevel = m_level;
     return false;
 }
 
-void Board::play(int x, int y) {
-    int result;
-//    HCURSOR hCursor;
-
-    // Cancela jogada
-    if (m_x == x && m_y == y) {
-        m_firstClick = true;
-        m_states[0].board[y][x] &= ~SELECT;
-        drawBoard();
+void Board::play() {
+    if (!validateMove()) {
+        QMessageBox::warning(this, "Chess", "Jogada inválida! Tente outra vez.");
         return;
     }
 
-    // Sua vez
-    result = yourTurn(x, y);
-    if (!result)
-        QMessageBox::warning(this, "Chess", "Jogada inválida! Tente outra vez.");
-    else if (result == 2)
+    // Verifica se ponhe o rei em cheque
+    m_mmLevel = 2;
+    memcpy(&m_states[1], &m_states[0], sizeof(STATE));
+    m_states[1].board[m_y2][m_x2] = m_states[1].board[m_y][m_x] & ~SELECT;
+    m_states[1].board[m_y][m_x] = 0;
+    if (myTurn(1, MINIMAX, BLACK, WHITE) >= 60) {
         QMessageBox::warning(this, "Chess", "Jogada inválida! Ela ponhe seu rei em cheque.");
-    else {
-        m_firstClick = true;
-        if (!gameFinished(WHITE, BLACK)) {
-
-            // Minha vez !!!
-//            hCursor = SetCursor(LoadCursor(NULL, IDC_WAIT));
-            myTurn(0, MINIMAX, BLACK, WHITE);
-//            SetCursor(hCursor);
-            gameFinished(BLACK, WHITE);
-        }
+        return;
     }
+
+    animateMove(SLOT(playerMoveFinished()));
+}
+
+void Board::playerMoveFinished() {
+    m_position.setX(0);
+    m_position.setY(0);
+    m_states[0].board[m_y2][m_x2] = m_piece;
+    m_gameStopped = false;
+
+    if (!gameFinished(WHITE, BLACK)) {
+        m_mmLevel = m_level;
+        myTurn(0, MINIMAX, BLACK, WHITE);
+    }
+}
+
+void Board::computerMoveFinished() {
+    m_position.setX(0);
+    m_position.setY(0);
+    m_states[0].board[m_y2][m_x2] = m_piece;
+    m_gameStopped = false;
+
+    gameFinished(BLACK, WHITE);
+}
+
+QPoint Board::position() const
+{
+    return m_position;
+}
+
+void Board::setPosition(const QPoint &pos)
+{
+    m_position = pos;
+    update();
 }
 
 void Board::paintEvent(QPaintEvent *)
@@ -1384,19 +1321,40 @@ void Board::paintEvent(QPaintEvent *)
         }
     }
 
-    if (m_mx >= 0)
-        painter.drawPixmap(m_mx + 1, m_my + 1, m_piece & BLACK ? m_black : m_white,
+    if (!m_position.isNull())
+        painter.drawPixmap(m_position.x() + 1, m_position.y() + 1, m_piece & BLACK ? m_black : m_white,
                            ((m_piece & 0x07) - 1) * 48, 0, 48, 48);
 }
 
 void Board::mousePressEvent(QMouseEvent *event)
 {
-    int x = event->x() / SIZE, y = event->y() / SIZE;
-
     if (!m_gameStopped) {
-        if (m_firstClick)
-            selectPiece(x, y);
-        else
-            play(x, y);
+        int x = event->x() / SIZE, y = event->y() / SIZE;
+
+        if (m_firstClick) {
+            if (!(m_states[0].board[y][x] & WHITE))
+                QMessageBox::warning(this, "Chess", "Please, select a white piece.");
+            else {
+                m_x = x;
+                m_y = y;
+                m_firstClick = false;
+                m_states[0].board[y][x] |= SELECT;
+                update();
+            }
+        } else if (m_x == x && m_y == y) {
+            m_firstClick = true;
+            m_states[0].board[y][x] &= ~SELECT;
+            update();
+        } else if (m_states[0].board[y][x] & WHITE) {
+            m_states[0].board[m_y][m_x] &= ~SELECT;
+            m_x = x;
+            m_y = y;
+            m_states[0].board[y][x] |= SELECT;
+            update();
+        } else {
+            m_x2 = x;
+            m_y2 = y;
+            play();
+        }
     }
 }
