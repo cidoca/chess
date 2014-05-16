@@ -1,5 +1,5 @@
 /*
-  RPG Studio, A chess game
+  A chess game
   Copyright (C) 2014 Cidorvan Leite
 
   This program is free software: you can redistribute it and/or modify

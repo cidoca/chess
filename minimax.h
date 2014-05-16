@@ -16,31 +16,41 @@
   along with this program.  If not, see [http://www.gnu.org/licenses/].
 */
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef MINIMAX_H
+#define MINIMAX_H
 
-#include <QtGui>
+#include <QThread>
 
-class BoardWidget;
+#define MINIMAX 1000
 
-class MainWindow : public QMainWindow
+class Board;
+
+class MiniMax : public QThread
 {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = 0);
+    MiniMax(Board *board, QObject *parent = 0);
+
+    void setDificulty(int level);
+    bool isCheck(int x1, int y1, int x2, int y2);
+    bool isCheck();
+    bool isCheckMate(int player, int opponent);
+    void cpuPlay();
+    int m_x, m_y, m_x2, m_y2;
 
 protected:
-    void createMenuBar();
+    void sumPoints(char *state);
+    int myTurn(int level, int MM, int player, int opponent);
 
-private slots:
-    void newGameEasy();
-    void newGameNormal();
-    void newGameHard();
-    void newGameExpert();
+signals:
+    void cpuDone(int x1, int y1, int x2, int y2);
 
 private:
-    BoardWidget *m_boardWidget;
+    int m_points[7];
+    int m_mmLevel, m_level;
+    int m_black, m_white;
+    char *m_board;
 };
 
 #endif

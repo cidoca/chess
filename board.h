@@ -1,5 +1,5 @@
 /*
-  RPG Studio, A chess game
+  A chess game
   Copyright (C) 2014 Cidorvan Leite
 
   This program is free software: you can redistribute it and/or modify
@@ -19,49 +19,34 @@
 #ifndef BOARD_H
 #define BOARD_H
 
-#include <QtGui>
+#define PAWN    0x01
+#define ROOK    0x02
+#define KNIGHT  0x03
+#define BISHOP  0x04
+#define QUEEN   0x05
+#define KING    0x06
+#define WHITE   0x10
+#define BLACK   0x20
+#define SELECT  0x40
+#define MOVE    0x80
 
-struct STATE {
-    int white, black;
-    char board[8][8];
-};
-
-class Board : public QWidget
-{
-    Q_OBJECT
-    Q_PROPERTY(QPoint position READ position WRITE setPosition)
-
+class Board {
 public:
-    Board(QWidget *parent = 0);
-    void newGame(int level);
+    Board();
+
+    char *current();
+    void reset();
+    void clearMoves();
+    void findMoves(int x, int y);
 
 protected:
-    void animateMove(const char *method);
-    void sumPoints(STATE *estado);
-    int myTurn(int level, int MM, int player, int opponent);
-    bool validateMove();
-    bool gameFinished(int player, int opponent);
-    void play();
-    QPoint position() const;
-    void setPosition(const QPoint &pos);
-
-    void paintEvent(QPaintEvent *event);
-    void mousePressEvent(QMouseEvent *event);
-
-signals:
-
-public slots:
-    void playerMoveFinished();
-    void computerMoveFinished();
+    bool validateMove(int x1, int y1, int x2, int y2);
+    bool horizontal(int x1, int y1, int x2);
+    bool vertical(int x1, int y1, int y2);
+    bool diagonal(int x1, int y1, int x2, int y2, int len);
 
 private:
-    int m_piece, m_x, m_y, m_x2, m_y2;
-    int m_points[7];
-    int m_mmLevel, m_level;
-    bool m_gameStopped, m_firstClick;
-    STATE m_states[10];
-    QPoint m_position;
-    QPixmap m_board, m_black, m_white;
+    char m_board[8 * 8 * 10];
 };
 
 #endif

@@ -1,5 +1,5 @@
 /*
-  RPG Studio, A chess game
+  A chess game
   Copyright (C) 2014 Cidorvan Leite
 
   This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 */
 
 #include "mainwindow.h"
-#include "board.h"
+#include "boardwidget.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent)
@@ -27,10 +27,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     createMenuBar();
 
-    board = new Board;
-    setCentralWidget(board);
+    m_boardWidget = new BoardWidget;
+    setCentralWidget(m_boardWidget);
 
-    board->newGame(3);
+    newGameEasy();
 }
 
 void MainWindow::createMenuBar()
@@ -51,20 +51,24 @@ void MainWindow::createMenuBar()
 
 void MainWindow::newGameEasy()
 {
-    board->newGame(3);
+    m_boardWidget->newGame(3);
+    setWindowTitle("Chess - easy");
 }
 
 void MainWindow::newGameNormal()
 {
-    board->newGame(4);
+    m_boardWidget->newGame(4);
+    setWindowTitle("Chess - normal");
 }
 
 void MainWindow::newGameHard()
 {
-    board->newGame(5);
+    m_boardWidget->newGame(5);
+    setWindowTitle("Chess - hard");
 }
 
 void MainWindow::newGameExpert()
 {
-    board->newGame(6);
+    m_boardWidget->newGame(6);
+    setWindowTitle("Chess - expert");
 }

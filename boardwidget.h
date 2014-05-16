@@ -16,31 +16,46 @@
   along with this program.  If not, see [http://www.gnu.org/licenses/].
 */
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef BOARDWIDGET_H
+#define BOARDWIDGET_H
 
 #include <QtGui>
 
-class BoardWidget;
+class Board;
+class MiniMax;
 
-class MainWindow : public QMainWindow
+class BoardWidget : public QWidget
 {
     Q_OBJECT
+    Q_PROPERTY(QPoint position READ position WRITE setPosition)
 
 public:
-    MainWindow(QWidget *parent = 0);
+    BoardWidget(QWidget *parent = 0);
+    void newGame(int level);
 
 protected:
-    void createMenuBar();
+    void animateMove(const char *method);
+    void play();
+    QPoint position() const;
+    void setPosition(const QPoint &pos);
 
-private slots:
-    void newGameEasy();
-    void newGameNormal();
-    void newGameHard();
-    void newGameExpert();
+    void paintEvent(QPaintEvent *event);
+    void mousePressEvent(QMouseEvent *event);
+
+public slots:
+    void playerMoveFinished();
+    void computerMoveFinished();
+
+signals:
 
 private:
-    BoardWidget *m_boardWidget;
+    int m_piece, m_x, m_y, m_x2, m_y2;
+    bool m_gameStopped, m_firstClick;
+    QPoint m_position;
+    Board *m_board;
+    MiniMax *m_minimax;
+    QPixmap m_background, m_black, m_white;
+    char *m_currentBoard;
 };
 
 #endif

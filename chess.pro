@@ -1,11 +1,15 @@
 QMAKE_CXXFLAGS += -std=c++11
 
 HEADERS = mainwindow.h \
-          board.h
+          board.h \
+          minimax.h \
+          boardwidget.h
 
 SOURCES = main.cpp \
           mainwindow.cpp \
-          board.cpp
+          board.cpp \
+          minimax.cpp \
+          boardwidget.cpp
 
 RESOURCES = images.qrc
 
